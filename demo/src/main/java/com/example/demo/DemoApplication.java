@@ -41,7 +41,20 @@ public class DemoApplication {
 				User admin = new User();
 				admin.setFullName("Admin User");
 				admin.setEmail("admin@example.com");
+//				admin.setPasswordHash("password");
 				admin.setPasswordHash(passwordEncoder.encode("password"));
+				Set<Role> adminRoles = new HashSet<>();
+				adminRoles.add(adminRole);
+				admin.setRoles(adminRoles);
+				userRepository.save(admin);
+			}
+
+			if (userRepository.findByEmail("admin2@example.com").isEmpty()) {
+				User admin = new User();
+				admin.setFullName("Admin User");
+				admin.setEmail("admin2@example.com");
+				admin.setPasswordHash("password");
+//				admin.setPasswordHash(passwordEncoder.encode("password"));
 				Set<Role> adminRoles = new HashSet<>();
 				adminRoles.add(adminRole);
 				admin.setRoles(adminRoles);
