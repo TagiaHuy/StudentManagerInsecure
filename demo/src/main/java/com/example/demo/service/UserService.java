@@ -28,11 +28,12 @@ public class UserService {
         
         // Lỗi Broken Access Control: Nếu người dùng gửi kèm role=ADMIN, ta cũng thực hiện gán quyền (giả định bảng user_roles)
         if (role != null && !role.isEmpty()) {
-            // Giả sử có logic gán quyền dựa trên chuỗi role truyền vào mà không kiểm tra
-            String roleSql = "INSERT INTO user_roles (user_id, role_id) SELECT id, (SELECT id FROM roles WHERE name = '" + role + "') FROM users WHERE email = '" + email + "'";
+            // Đảm bảo tên role có prefix ROLE_ nếu người dùng quên nhập (hoặc để người dùng tự nhập để test lỗi)
+            String targetRole = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+            String roleSql = "INSERT INTO user_roles (user_id, role_id) SELECT id, (SELECT id FROM roles WHERE name = '" + targetRole + "') FROM users WHERE email = '" + email + "'";
             entityManager.createNativeQuery(roleSql).executeUpdate();
         } else {
-            // Mặc định là USER nếu không truyền
+            // Mặc định là ROLE_USER nếu không truyền
             String defaultRoleSql = "INSERT INTO user_roles (user_id, role_id) SELECT id, (SELECT id FROM roles WHERE name = 'ROLE_USER') FROM users WHERE email = '" + email + "'";
             entityManager.createNativeQuery(defaultRoleSql).executeUpdate();
         }
