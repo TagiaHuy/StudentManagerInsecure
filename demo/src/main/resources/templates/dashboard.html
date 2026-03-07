@@ -1,12 +1,56 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Dashboard!</h1>
-    <form th:action="@{/logout}" method="post">
-        <input type="submit" value="Sign Out"/>
-    </form>
+<div class="header">
+    <h1>Dashboard</h1>
+    <div>
+        <span th:text="'Xin chào, ' + ${user.fullName}"></span>
+        <a href="/logout" class="logout-btn">Đăng xuất</a>
+    </div>
+</div>
+
+<div class="content">
+    <h2>Chào mừng bạn đến với hệ thống quản lý sinh viên!</h2>
+    <p>Email: <span th:text="${user.email}"></span></p>
+    <p>Vai trò: <span th:text="${user.roles}"></span></p>
+</div>
 </body>
 </html>

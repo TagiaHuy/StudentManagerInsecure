@@ -8,7 +8,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,7 +20,7 @@ public class DemoApplication {
 	}
 
 	@Bean
-	CommandLineRunner initDatabase(RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+	CommandLineRunner initDatabase(RoleRepository roleRepository, UserRepository userRepository) {
 		return args -> {
 			// Create Roles
 			Role adminRole = roleRepository.findByName("ROLE_ADMIN").orElseGet(() -> {
@@ -41,20 +40,7 @@ public class DemoApplication {
 				User admin = new User();
 				admin.setFullName("Admin User");
 				admin.setEmail("admin@example.com");
-//				admin.setPasswordHash("password");
-				admin.setPasswordHash(passwordEncoder.encode("password"));
-				Set<Role> adminRoles = new HashSet<>();
-				adminRoles.add(adminRole);
-				admin.setRoles(adminRoles);
-				userRepository.save(admin);
-			}
-
-			if (userRepository.findByEmail("admin2@example.com").isEmpty()) {
-				User admin = new User();
-				admin.setFullName("Admin User");
-				admin.setEmail("admin2@example.com");
-				admin.setPasswordHash("password");
-//				admin.setPasswordHash(passwordEncoder.encode("password"));
+				admin.setPassword("password");
 				Set<Role> adminRoles = new HashSet<>();
 				adminRoles.add(adminRole);
 				admin.setRoles(adminRoles);
