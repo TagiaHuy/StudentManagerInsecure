@@ -27,4 +27,6 @@ public class Student {
     @ManyToOne
     @JoinColumn(name = "class_id")
     private ClassEntity clazz;
+
+    private String avatarPath; // Đường dẫn ảnh đại diện (Dùng để test lỗi File Upload)
 }

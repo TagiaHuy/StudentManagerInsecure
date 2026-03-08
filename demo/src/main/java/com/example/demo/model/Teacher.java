@@ -25,5 +25,6 @@ public class Teacher {
     private String department;
 
     @OneToMany(mappedBy = "teacher")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Set<ClassEntity> classes;
 }
