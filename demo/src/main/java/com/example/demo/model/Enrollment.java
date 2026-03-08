@@ -23,6 +23,8 @@ public class Enrollment {
     @JoinColumn(name = "class_id")
     private ClassEntity classEntity;
 
+    private Double grade = 0.0; // Điểm số của sinh viên trong lớp này
+
     private LocalDateTime enrolledAt;
 
     @PrePersist

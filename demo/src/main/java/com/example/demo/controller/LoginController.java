@@ -6,6 +6,8 @@ import com.example.demo.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Base64;
@@ -20,6 +22,9 @@ import java.util.Optional;
 public class LoginController {
 
     private final UserRepository userRepository;
+    
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     public LoginController(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -27,15 +32,9 @@ public class LoginController {
 
     /**
      * API Đăng nhập
-     * LỖI:
-     * 1. A03: SQL Injection (Sử dụng nối chuỗi trong UserRepository)
-     * 2. A04: Cryptographic Failures (Mật khẩu Plaintext)
-     * 3. A02: Security Misconfiguration (Lộ thông tin chi tiết lỗi)
-     * 4. A07: Authentication Failures (Không có brute-force protection, mật khẩu yếu)
-     * 5. A05: Security Logging Failures (Không log khi login sai)
-     * 6. A01: Broken Access Control (Token Base64 không an toàn)
+     * LỖI: Chứa nhiều lỗ hổng OWASP để minh họa.
      */
-    @Operation(summary = "Đăng nhập hệ thống", description = "Endpoint chứa nhiều lỗi bảo mật phục vụ minh họa.")
+    @Operation(summary = "Đăng nhập hệ thống", description = "Endpoint trả về token Base64 và studentCode (nếu là sinh viên).")
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody LoginRequest loginRequest, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
@@ -45,7 +44,6 @@ public class LoginController {
             String password = loginRequest.getPassword();
 
             // SQL INJECTION VULNERABILITY (A03)
-            // Hacker có thể dùng email: ' OR '1'='1' -- để bypass
             Optional<User> userOpt = userRepository.findByEmailAndPasswordInsecure(email, password);
 
             if (userOpt.isPresent()) {
@@ -54,40 +52,41 @@ public class LoginController {
                 // Cài đặt Session không an toàn (A01)
                 session.setAttribute("loggedInUser", user);
                 
-                // Trả về Token không an toàn (Chỉ là Base64 của email - Broken Access Control A01)
+                // Trả về Token không an toàn (Chỉ là Base64 của email - A01)
                 String insecureToken = Base64.getEncoder().encodeToString(user.getEmail().getBytes());
                 
                 response.put("status", "success");
                 response.put("message", "Đăng nhập thành công!");
-                response.put("token", insecureToken); // Token này có thể bị giải mã dễ dàng
+                response.put("token", insecureToken);
                 response.put("user", user);
+
+                // THÊM: Tìm studentCode từ bảng students (Nếu có)
+                try {
+                    // LỖI: SQL Injection tại user.getId() (Minh họa nối chuỗi trực tiếp)
+                    String findStudentSql = "SELECT student_code FROM students WHERE user_id = " + user.getId();
+                    String studentCode = jdbcTemplate.queryForObject(findStudentSql, String.class);
+                    response.put("studentCode", studentCode);
+                } catch (Exception e) {
+                    // Nếu không phải sinh viên, giá trị này sẽ là null
+                    response.put("studentCode", null);
+                }
                 
-                // LỖI: Thiếu Logging cho lần đăng nhập thành công có ý nghĩa (A05)
                 return response;
             } else {
-                // KIỂM TRA LỖI LỘ THÔNG TIN (Security Misconfiguration A02)
-                // Ta kiểm tra xem email có tồn tại không để báo lỗi chi tiết (GIÚP HACKER ENUMERATE USER)
+                // KIỂM TRA LỖI LỘ THÔNG TIN (A02)
                 Optional<User> checkUser = userRepository.findByEmail(email);
-                
                 if (checkUser.isPresent()) {
-                    // LỖI A02: Báo lỗi chi tiết "Sai mật khẩu" giúp hacker biết user tồn tại
                     response.put("status", "error");
                     response.put("message", "Mật khẩu cho tài khoản " + email + " không chính xác.");
                 } else {
-                    // LỖI A02: Báo lỗi chi tiết "Email không tồn tại"
                     response.put("status", "error");
-                    response.put("message", "Email " + email + " không tồn tại trong hệ thống.");
+                    response.put("message", "Email " + email + " không tồn tại.");
                 }
-                
-                // LỖI: Thiếu Logging Failures (A05) - Không ghi lại IP hay thời gian đăng nhập sai
                 return response;
             }
         } catch (Exception e) {
-            // LỖI A02: Ném thẳng Exception SQL cho người dùng (Security Misconfiguration)
             response.put("status", "error");
-            response.put("exception", e.getClass().getName());
-            response.put("message", "Lỗi database: " + e.getMessage());
-            response.put("stackTrace", e.getStackTrace());
+            response.put("message", "Lỗi: " + e.getMessage());
             return response;
         }
     }

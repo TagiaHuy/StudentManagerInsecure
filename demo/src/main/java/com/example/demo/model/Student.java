@@ -28,7 +28,5 @@ public class Student {
     @JoinColumn(name = "class_id")
     private ClassEntity clazz;
 
-    private Double grade; // Điểm số (Dùng để test lỗi sinh viên tự sửa điểm)
-
     private String avatarPath; // Đường dẫn ảnh đại diện (Dùng để test lỗi File Upload)
 }
