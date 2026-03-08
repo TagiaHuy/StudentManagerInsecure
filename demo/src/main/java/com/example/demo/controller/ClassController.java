@@ -71,10 +71,13 @@ public class ClassController {
     /**
      * Lấy toàn bộ danh sách lớp học
      */
-    @Operation(summary = "Lấy toàn bộ danh sách lớp học", description = "Có thể bị SQL Injection qua query params.")
+    @Operation(summary = "Lấy toàn bộ danh sách lớp học", description = "Hiển thị thông tin lớp kèm mã số giảng viên.")
     @GetMapping
     public List<Map<String, Object>> getAllClasses() {
-        String sql = "SELECT * FROM classes";
+        // JOIN qua bảng teachers để lấy teacher_code
+        String sql = "SELECT c.*, t.teacher_code FROM classes c " +
+                     "LEFT JOIN teachers t ON c.teacher_id = t.id";
         return jdbcTemplate.queryForList(sql);
     }
+
 }
