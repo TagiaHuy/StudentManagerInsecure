@@ -62,13 +62,20 @@ public class LoginController {
 
                 // THÊM: Tìm studentCode từ bảng students (Nếu có)
                 try {
-                    // LỖI: SQL Injection tại user.getId() (Minh họa nối chuỗi trực tiếp)
                     String findStudentSql = "SELECT student_code FROM students WHERE user_id = " + user.getId();
                     String studentCode = jdbcTemplate.queryForObject(findStudentSql, String.class);
                     response.put("studentCode", studentCode);
                 } catch (Exception e) {
-                    // Nếu không phải sinh viên, giá trị này sẽ là null
                     response.put("studentCode", null);
+                }
+
+                // THÊM: Tìm teacherCode từ bảng teachers (Nếu có)
+                try {
+                    String findTeacherSql = "SELECT teacher_code FROM teachers WHERE user_id = " + user.getId();
+                    String teacherCode = jdbcTemplate.queryForObject(findTeacherSql, String.class);
+                    response.put("teacherCode", teacherCode);
+                } catch (Exception e) {
+                    response.put("teacherCode", null);
                 }
                 
                 return response;

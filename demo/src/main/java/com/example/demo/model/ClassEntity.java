@@ -21,6 +21,8 @@ public class ClassEntity {
     @Column(nullable = false)
     private String className;
 
+    private String description; // Mô tả lớp học
+
     @ManyToOne
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
